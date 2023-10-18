@@ -15,3 +15,7 @@ This is a simple script I created to help me with simple tasks where I need to s
 ## To send the list of emails:
 
 `python send.py "TEMPLATE.HTML" "EMAIL TITLE" "EMAIL SUBJECT"`
+
+## Responses Folder 
+
+A json file is going to be saved for each batch of emails you send. You can check if your email was successfully sent or not. In case of failures we add the error string so you can debug.
