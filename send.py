@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import time
 import datetime
 import smtplib, ssl
 from email.mime.text import MIMEText
@@ -78,6 +79,8 @@ recipients = json.load(recipients_file)
 
 responses = []
 
+send_delay = 600/100
+
 for recipient in recipients:
     content = content.replace(
         "{{ recipient_name }}",
@@ -87,13 +90,25 @@ for recipient in recipients:
     try:
         _send_email(recipient["email"], email_subject, content)
         responses.append(
-            {"recipient": recipient["email"], "status": "success", "delivery_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
+            {
+                "recipient": recipient["email"],
+                "status": "success",
+                "delivery_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            }
         )
     except Exception as err:
-        print(err)
         responses.append(
-            {"recipient": recipient["email"], "status": "failure", "delivery_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
+            {
+                "recipient": recipient["email"],
+                "status": "failure",
+                "delivery_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "error_message": str(err)
+            }
         )
+    
+    if len(recipients) > max_emails_per_hour:
+        send_delay = int(3600 / max_emails_per_hour) + 1
+        time.sleep(send_delay)
 
 response_file_name = f"{ email_subject }_{ datetime.datetime.now().strftime('%Y_%m_%d_%H_%M') }.json"
 response_file_name_full_path = os.path.join("responses", response_file_name)
